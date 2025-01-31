@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Don't let it fall</title>
+  <script src="p5.min.js"></script>
+  <script src="p5.sound.js"></script>
+  <style>
+    body {
+      margin: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      background-color: #d7bde2;
+      flex-direction: column;
+    }
+	
+	.text {
+      position: absolute;
+      top: 150px; 
+      left: 10px; 
+      background-color: #a93226; 
+      padding: 20px;
+      width: 250px; 
+      color: white; 
+      font-size: 18px; 
+      border-radius: 5px; 
+    }
+
+    .text p {
+      margin: 10px 1; 
+    }
+
+    .bold {
+      font-weight: bold; 
+    }
+    button {
+      padding: 10px 30px;
+      font-size: 20px;
+      font-family: Arial, sans-serif;
+      background-color: #a93226;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    button:hover {
+      background-color: #a9dfbf;
+    }
+    canvas {
+      display: block;
+	  position: relative;
+	  top: 50px;
+    }
+  </style>
+</head>
+<body>
+	 <div class="text">
+		    <h2> Οδηγίες</h2>
+			<p> ~ Πάτησε το δεξί και αριστερό βελάκι για να κουνήσεις την πλατφόρμα.</p>
+			<p> ~ Μην αφήσεις την μπάλα να πέσει και κάνε το μεγαλύτερο σκορ που μπορείς.</p>
+			<p class="bold">Καλή Διασκέδαση !!!</p>
+		</div>
+
+  <script>
+  
+    let startButton;
+    let respawnButton;
+	let mainMusic;
+    let endMusic;
+    let paddleX, paddleY, paddleWidth, paddleHeight;
+    let ballX, ballY, ballSize, ballSpeedX, ballSpeedY;
+    let score = 0;
+    let gameStarted = false;
+	
+	function preload() {
+      mainMusic = loadSound("Ping_Pong.wav"); 
+      endMusic = loadSound("Game_Over.wav"); 
+    }
+    function setup() {
+      createCanvas(900, 600);
+
+      paddleWidth = 100;
+      paddleHeight = 15;
+      paddleX = width / 2; 
+      paddleY = height - 40;
+
+      ballSize = 20;
+      resetBall();
+	  
+      startButton = createButton("Start");
+      startButton.position(width / 2 -  -800, 250);
+      startButton.mousePressed(startGame); 
+
+      respawnButton = createButton("Respawn");
+      respawnButton.position(width / 2 - -800, 250);
+      respawnButton.mousePressed(resetGame);
+      respawnButton.hide(); 
+      noLoop(); 
+    }
+	
+    function draw() {
+      background(50);
+      fill(255);
+      textSize(24);
+      text(`Score: ${score}`, 10, 30);
+      rect(paddleX, paddleY, paddleWidth, paddleHeight);
+
+      ellipse(ballX, ballY, ballSize);
+      ballX += ballSpeedX;
+      ballY += ballSpeedY;
+	  
+      if (ballX <= 0 || ballX >= width) ballSpeedX *= -1;
+      if (ballY <= 0) ballSpeedY *= -1;
+
+      if (
+        ballY + ballSize / 2 >= paddleY &&
+        ballX > paddleX &&
+        ballX < paddleX + paddleWidth ) 
+       { 
+	   ballSpeedY *= -1;
+        score++;
+
+        if (score % 3 == 0) {
+          ballSpeedX *= 1.3;
+          ballSpeedY *= 1.3;
+        }
+      }
+
+      if (ballY > height) {
+        noLoop();
+        respawnButton.show();
+        textSize(32);
+        fill(255, 0, 0);
+        text("Game Over!", width / 2 - 100, height / 2);
+		if (mainMusic.isPlaying()) {
+          mainMusic.stop();
+        }
+        if (!endMusic.isPlaying()) {
+          endMusic.play();
+        }
+        }
+
+      if (keyIsDown(LEFT_ARROW)) {
+        paddleX -= 7;
+      }
+      if (keyIsDown(RIGHT_ARROW)) {
+        paddleX += 7;
+      }
+
+      paddleX = constrain(paddleX, 0, width - paddleWidth);
+    }
+
+    function resetBall() {
+      ballX = width / 2;
+      ballY = height / 2;
+      ballSpeedX = random([-4, 4]);
+      ballSpeedY = random([-4, 4]);
+    }
+	
+    function startGame() {
+      score = 0;
+      resetBall();
+      startButton.hide(); 
+	  if (!mainMusic.isPlaying()) {
+        mainMusic.play();
+      }
+      loop(); 
+      }
+	  
+    function resetGame() {
+      score = 0;
+      resetBall();
+	  paddleX = width / 2 
+      paddleY = height - 40;
+      respawnButton.hide(); 
+      startButton.hide(); 
+	  if (endMusic.isPlaying()) {
+        endMusic.stop();
+      }
+      if (!mainMusic.isPlaying()) {
+        mainMusic.play();
+      }
+      loop(); 
+    }
+  </script>
+</body>
+</html>
+
